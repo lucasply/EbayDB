@@ -83,17 +83,20 @@ router.get('/top', async (req, res) => {
 router.get('/history', async (req, res) => {
   try {
     const [rows] = await db.query(`
-      SELECT
-        p.name,
-        s.sold_at,
-        s.sold_price,
-        s.quantity,
-        p.price AS purchased_price,
-        stk.bought_at AS purchase_date
-      FROM sold s
-      JOIN products p ON s.product_id = p.id
-      LEFT JOIN stock stk ON s.product_id = stk.product_id
-      ORDER BY s.sold_at DESC
+    SELECT
+      s.id,         
+      s.product_id,       
+      p.name,
+      p.company,
+      s.sold_at,
+      s.sold_price,
+      s.quantity,
+      p.price AS purchased_price,
+      stk.bought_at AS purchase_date
+    FROM sold s
+    JOIN products p ON s.product_id = p.id
+    LEFT JOIN stock stk ON s.product_id = stk.product_id
+    ORDER BY s.sold_at DESC
     `);
     res.json(rows);
   } catch (err) {
@@ -102,6 +105,31 @@ router.get('/history', async (req, res) => {
   }
 });
 
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await db.query('DELETE FROM sold WHERE id = ?', [id]);
+    res.status(200).json({ success: true });  
+  } catch (err) {
+    console.error('Error deleting sale:', err);
+    res.status(500).json({ success: false, error: 'Failed to delete sale.' });
+  }
+});
 
+
+router.post('/set', async (req, res) => {
+  const { id, quantity, sold_price, date } = req.body;
+
+  try {
+      await db.query(
+        'UPDATE sold SET quantity = ?, sold_price = ?, sold_at = ? WHERE id = ?',
+        [quantity, sold_price, date, id]
+      );
+      res.json({ success: true, message: 'Sale updated.' });
+    } catch (err) {
+      console.error('Error updating product:', err);
+      res.status(500).json({ success: false, error: 'Failed to update product.' });
+    }
+});
 
 module.exports = router;

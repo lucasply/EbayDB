@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import Dashboard from './components/Dashboard';
 import AddProductForm from './components/AddProductForm';
 import StockManager from './components/StockManager';
 import SaleRecorder from './components/SalesRecorder';
 import ProductList from './components/ProductList';
 import SoldList from './components/SoldList';
+// import './app.css';
 
 import { api } from './api';
 
@@ -17,7 +17,8 @@ export default function App() {
 
   const [products, setProducts] = useState([]);
   const [stockData, setStockData] = useState([]);
-  const [salesRefreshKey, setSalesRefreshKey] = useState(0);
+  const [sales, setSales] = useState([]);
+
 
   const refreshTotals = () => {
     api.get('/totals')
@@ -37,46 +38,66 @@ export default function App() {
     .catch(err => console.error('Error fetching stock data:', err));
 };
 
-  const refreshSales = () => setSalesRefreshKey(prev => prev + 1);
+
+  const refreshSales = () => {
+    api.get('/sold/history')
+      .then(res =>{ 
+        setSales(res.data)
+      })
+      .catch(err => console.error('Failed to fetch sales history:', err));
+  };
 
   useEffect(() => {
     refreshTotals();
     refreshProducts();
     refreshStock();
+    refreshSales();
   }, []);
 
   return (
-    <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
+    <div className="body">
       <h1>Product Tracker</h1>
-      <Dashboard totals={totals} />
       <AddProductForm onChange={() => {
         refreshTotals();
-        refreshProducts(); // refresh product list
+        refreshProducts();
       }} />
       <StockManager
         products={products}
         onChange={() => {
           refreshTotals();
-          refreshStock(); // update stock
-        }}/>
+          refreshStock();
+        }}
+      />
       <SaleRecorder 
         products={products} 
         onChange={() => {
-          refreshTotals();
-          refreshProducts(); // refresh product list
-          refreshStock(); // update stock
-          refreshSales(); // 👈 trigger re-render of SoldList
+          refreshProducts();
+          refreshStock();
+          refreshSales();
+        }} 
+      />
 
-        }} />
-      <ProductList stockData={stockData} onChange={() => {
-        refreshStock();
-        refreshTotals();
-        refreshProducts();
-        }} />
+        <div className="flex-row">
+          <div className="flex-column">
+            <ProductList stockData={stockData} onChange={() => {
+              refreshStock();
+              refreshProducts();
+              refreshSales();
 
-      <SoldList refreshKey={salesRefreshKey} />
+            }} />
+          </div>
 
+        <div className="flex-column">
+          <SoldList sales={sales} onChange={() => {
+              refreshSales();
+              refreshStock();
+              refreshProducts();
+            }}
+          />
+        </div>
+      </div>
     </div>
   );
+
 }
 

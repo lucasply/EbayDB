@@ -10,10 +10,10 @@ export default function ProductList({ stockData, onChange }) {
   };
 
   const handleSave = async (id, updatedFields) => {
-    const { name, price, description, upc, quantity, date } = updatedFields;
+    const { name, price, company, description, upc, quantity, date } = updatedFields;
 
     // Update product
-    await api.put(`/products/${id}`, { name, price, description, upc });
+    await api.put(`/products/${id}`, { name, price, company, description, upc });
 
     // Update quantity and date
     await api.post('/stock/set', { product_id: id, quantity: parseInt(quantity, 10), date: date });
@@ -37,6 +37,7 @@ export default function ProductList({ stockData, onChange }) {
         <thead>
           <tr>
             <th>Name</th>
+            <th>Company</th>
             <th>Stock</th>
             <th>Date Purchased</th>
             <th>Price</th>
@@ -48,6 +49,7 @@ export default function ProductList({ stockData, onChange }) {
           {stockData.map(row => (
             <tr key={row.id}>
               <td>{row.name}</td>
+              <td>{row.company}</td>
               <td>{row.quantity}</td>
               <td>
                 {(() => {

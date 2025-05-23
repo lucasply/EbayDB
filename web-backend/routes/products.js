@@ -10,15 +10,14 @@ router.get('/', async (req, res) => {
 
 // Inserts a new product
 router.post('/', async (req, res) => {
-  const { name, price, description, upc } = req.body;
+  const { name, price, company, description, upc } = req.body;
   const [result] = await db.query(
-    'INSERT INTO products (name, price, description, upc) VALUES (?, ?, ?, ?)',
-    [name, price, description, upc]
+    'INSERT INTO products (name, price, company, description, upc) VALUES (?, ?, ?, ?, ?)',
+    [name, price, company, description, upc]
   );
   res.json({ id: result.insertId });
 });
 
-// Deletes a product by ID
 // Deletes a product by ID
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
@@ -56,12 +55,12 @@ router.delete('/:id', async (req, res) => {
 // Update a product
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { name, price, description, upc } = req.body;
+  const { name, price, company, description, upc } = req.body;
 
   try {
     await db.query(
-      'UPDATE products SET name = ?, price = ?, description = ?, upc = ? WHERE id = ?',
-      [name, price, description, upc, id]
+      'UPDATE products SET name = ?, price = ?, company, description = ?, upc = ? WHERE id = ?',
+      [name, price, company, description, upc, id]
     );
     res.json({ success: true, message: 'Product updated.' });
   } catch (err) {

@@ -47,37 +47,36 @@ const styles = {
   }
 };
 
-export default function EditProductModal({ product, onClose, onSave }) {
+export default function EditSellModal({ product, onClose, onSave }) {
   const [form, setForm] = useState({
     name: '',
-    price: '',
-    company: '',
-    description: '',
-    upc: '',
+    PurchaseDate: '',
+    SoldDate: '',
+    PurchasePrice: '',
+    SoldPrice: '',
     quantity: '',
-    date: ''
   });
 
   useEffect(() => {
     if (product) {
-      setForm({
+        setForm({
         name: product.name || '',
-        price: product.price || '',
-        company: product.company || '',
-        description: product.description || '',
-        upc: product.upc || '',
+        PurchaseDate: product.purchase_date ? product.purchase_date.split('T')[0] : '2000-01-01',
+        SoldDate: product.sold_at ? product.sold_at.split('T')[0] : '2000-01-01',
+        PurchasePrice: product.purchased_price || '',
+        SoldPrice: product.sold_price || '',
         quantity: product.quantity || 0,
-        date: product.bought_at ? product.bought_at.split('T')[0] : '2000-01-01'
-      });
+        });
     }
-  }, [product]);
+    }, [product]);
+
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = () => {
-    onSave(product.id, form);
+    onSave(product, form);
   };
 
   if (!product) return null;
@@ -85,46 +84,35 @@ export default function EditProductModal({ product, onClose, onSave }) {
   return (
     <div style={styles.overlay}>
       <div style={styles.modal}>
-        <div style={styles.title}>Edit Product</div>
+        <div style={styles.title}>Edit Sale</div>
 
         <div style={styles.field}>
           <label>Name:</label>
-          <input style={styles.input} name="name" value={form.name} onChange={handleChange} />
+          <input style={styles.input} name="name" type="text" value={form.name} onChange={handleChange} />
         </div>
 
         <div style={styles.field}>
-          <label>Company:</label>
-          <input style={styles.input} name="company" value={form.company} onChange={handleChange} />
+          <label>Date Purchased:</label>
+          <input style={styles.input} name="PurchaseDate" type="date" value={form.PurchaseDate} onChange={handleChange} />
+        </div>
+
+        <div style={styles.field}>
+          <label>Date Sold:</label>
+          <input style={styles.input} name="SoldDate" type="date" value={form.SoldDate} onChange={handleChange} />
+        </div>
+
+        <div style={styles.field}>
+          <label>Purchase Price:</label>
+          <input style={styles.input} name="PurchasePrice" type="number" value={form.PurchasePrice} onChange={handleChange} />
+        </div>
+        <div style={styles.field}>
+          <label>Sold Price:</label>
+          <input style={styles.input} name="SoldPrice" type="number" value={form.SoldPrice} onChange={handleChange} />
         </div>
 
         <div style={styles.field}>
           <label>Quantity:</label>
           <input style={styles.input} name="quantity" type="number" value={form.quantity} onChange={handleChange} />
-        </div>
-
-        <div style={styles.field}>
-          <label>Date Purchased:</label>
-          <input style={styles.input} name="date" type="date" value={form.date} onChange={handleChange} />
-        </div>
-
-        <div style={styles.field}>
-          <label>Price:</label>
-          <input style={styles.input} name="price" type="number" value={form.price} onChange={handleChange} />
-        </div>
-
-        <div style={styles.field}>
-          <label>Description:</label>
-          <textarea
-            style={{ ...styles.input, height: '80px', resize: 'vertical' }}
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div style={styles.field}>
-          <label>UPC:</label>
-          <input style={styles.input} name="upc" value={form.upc} onChange={handleChange} />
         </div>
 
         <div style={styles.buttonRow}>
