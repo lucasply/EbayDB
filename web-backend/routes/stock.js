@@ -5,7 +5,7 @@ const db = require('../db');
 // Shows stock information
 router.get('/', async (req, res) => {
   const [rows] = await db.query(`
-    SELECT p.id, p.name, s.quantity, s.bought_at, p.price, (s.quantity * p.price) AS stock_value
+    SELECT p.id, p.name, p.company, s.quantity, s.bought_at, p.price, (s.quantity * p.price) AS stock_value
     FROM stock s
     JOIN products p ON s.product_id = p.id
   `);
@@ -45,7 +45,6 @@ router.post('/update', async (req, res) => {
 // Sets quantity for a specific product
 router.post('/set', async (req, res) => {
   const { product_id, quantity, date } = req.body;
-  console.log('Setting date:', date);
   try {
     const [rows] = await db.query('SELECT * FROM stock WHERE product_id = ?', [product_id]);
 
@@ -75,4 +74,14 @@ router.post('/set', async (req, res) => {
   }
 });
 
+router.post('/set2', async (req, res) => {
+  const { product_id, date } = req.body;
+  try {
+    await db.query('UPDATE stock SET bought_at = ? WHERE product_id = ?', [ date, product_id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error setting Date:', err);
+    res.status(500).json({ success: false, error: 'Failed to set quantity.' });
+  }
+});
 module.exports = router;
