@@ -2,59 +2,69 @@ import React, { useEffect, useState } from 'react';
 import { api } from '../api';
 import EditSellModal from './EditSellModal';
 
-export default function SoldList({ sales, onChange }) {
-  
-
+export default function SoldList({ onChange }) {
+  const [sales, setSales] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [editingProduct, setEditingProduct] = useState(null);
-  
-    const handleEdit = (product) => {
-      setEditingProduct(product);
-    };
-  
-    const handleSave = async (product, updatedFields) => {
-      const { name, PurchaseDate, SoldDate, PurchasePrice, SoldPrice, quantity } = updatedFields;
+  const itemsPerPage = 10;
 
-      const productId = product.product_id; // for stock/sold tables
-      const soldId = product.id;            // for updating sold by sold.id
+  useEffect(() => {
+    async function fetchSales() {
+      const res = await api.get(`/sold/paginated?page=${currentPage}&limit=${itemsPerPage}`);
+      setSales(res.data.data);
+      setTotalPages(Math.ceil(res.data.total / itemsPerPage));
+    }
+    fetchSales();
+  }, [currentPage]);
 
-      await api.put(`/products/${productId}`, { name, price: PurchasePrice });
+  const handleEdit = (product) => {
+    setEditingProduct(product);
+  };
 
-      await api.post('/stock/set2', { product_id: productId, date: PurchaseDate });
+  const handleSave = async (product, updatedFields) => {
+    const { name, PurchaseDate, SoldDate, PurchasePrice, SoldPrice, quantity } = updatedFields;
+    const productId = product.product_id;
+    const soldId = product.id;
 
-      await api.post('/sold/set', { id: soldId, quantity: parseInt(quantity, 10), sold_price: SoldPrice, date: SoldDate });
+    await api.put(`/products/${productId}`, { name, price: PurchasePrice });
+    await api.post('/stock/set2', { product_id: productId, date: PurchaseDate });
+    await api.post('/sold/set', { id: soldId, quantity: parseInt(quantity, 10), sold_price: SoldPrice, date: SoldDate });
 
-      setEditingProduct(null);
+    setEditingProduct(null);
+    if (onChange) onChange();
+    setCurrentPage(1); // Optionally reset to first page after edit
+  };
+
+  const handleDelete = async (Id) => {
+    if (window.confirm("Are you sure you want to delete this Sale?")) {
+      await api.delete(`/sold/${Id}`);
       if (onChange) onChange();
-    };
-
-  
-  
-    const handleDelete = async (Id) => {
-      if (window.confirm("Are you sure you want to delete this Sale?")) {
-        await api.delete(`/sold/${Id}`);
-        if (onChange) onChange();
-      }
-    };
+      setCurrentPage(1);
+    }
+  };
 
   return (
     <div>
       <h2>📈 Sales History</h2>
-      <table border="1" cellPadding="5">
-        <thead>
-          <tr>
-            <th>Product Name</th>
-            <th>Company</th>
-            <th>Purchase Date</th>
-            <th>Sold Date</th>
-            <th>Purchased Price</th>
-            <th>Sold Price</th>
-            <th>Quantity</th>
-            <th>Total Revenue</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(sales || []).map((row) => (
+
+      <div className="table-wrapper">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Company</th>
+              <th>Purchased on</th>
+              <th>Sold on</th>
+              <th>Paid</th>
+              <th>Sold</th>
+              <th>Amount</th>
+              <th>Revenue</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(sales || []).map((row) => (
               <tr key={row.id}>
                 <td>{row.name}</td>
                 <td>{row.company}</td>
@@ -68,18 +78,30 @@ export default function SoldList({ sales, onChange }) {
                   <button onClick={() => handleEdit(row)}>Edit</button>
                   <button onClick={() => handleDelete(row.id)}>Delete</button>
                 </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {/* Show modal if editing */}
-            {editingProduct && (
-              <EditSellModal
-                product={editingProduct}
-                onClose={() => setEditingProduct(null)}
-                onSave={handleSave}
-              />
-            )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* Pagination controls now inside wrapper */}
+        <div className="pagination-controls">
+          <button onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1}>
+            ← Prev
+          </button>
+          <span>Page {currentPage} of {totalPages}</span>
+          <button onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages}>
+            Next →
+          </button>
+        </div>
+      </div>
+
+      {editingProduct && (
+        <EditSellModal
+          product={editingProduct}
+          onClose={() => setEditingProduct(null)}
+          onSave={handleSave}
+        />
+      )}
     </div>
   );
 }
