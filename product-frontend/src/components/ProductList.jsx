@@ -70,7 +70,7 @@ export default function ProductList() {
                 })}</td>
                 <td>${row.price}</td>
                 <td>${row.stock_value ? Number(row.stock_value).toFixed(2) : '0.00'}</td>
-                <td>
+                <td className="action-buttons">
                   <button onClick={() => handleEdit(row)}>Edit</button>
                   <button onClick={() => handleDelete(row.id)}>Delete</button>
                 </td>

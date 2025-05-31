@@ -17,7 +17,7 @@
 .container {
   margin: 2rem auto;
   padding: 1rem;
-  max-width: 1200px; /* optional: limits content width */
+ 
 }
 body {
   margin: 0;
@@ -79,7 +79,7 @@ input::placeholder {
 
 .flex-row {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 2rem;
   justify-content: space-between;
 }

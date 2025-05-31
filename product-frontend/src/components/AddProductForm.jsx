@@ -19,7 +19,7 @@ export default function AddProductForm({ onChange }) {
       <input placeholder="Name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
       <input type="number" placeholder="Price" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required />
       <input placeholder="Company" value={form.company} onChange={e => setForm({ ...form, company: e.target.value })} />
-      <input placeholder="UPC (optional)" value={form.upc} onChange={e => setForm({ ...form, upc: e.target.value })} />
+      <input placeholder="UPC" value={form.upc} onChange={e => setForm({ ...form, upc: e.target.value })} />
       <button type="submit">Add</button>
     </form>
   );
