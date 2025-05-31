@@ -132,4 +132,38 @@ router.post('/set', async (req, res) => {
     }
 });
 
+
+router.get('/paginated', async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
+
+  try {
+    const [[{ total }]] = await db.query('SELECT COUNT(*) AS total FROM sold');
+
+    const [rows] = await db.query(`
+      SELECT
+        s.id,
+        s.product_id,
+        p.name,
+        p.company,
+        s.sold_at,
+        s.sold_price,
+        s.quantity,
+        p.price AS purchased_price,
+        stk.bought_at AS purchase_date
+      FROM sold s
+      JOIN products p ON s.product_id = p.id
+      LEFT JOIN stock stk ON s.product_id = stk.product_id
+      ORDER BY s.sold_at DESC
+      LIMIT ? OFFSET ?
+    `, [limit, offset]);
+
+    res.json({ data: rows, total });
+  } catch (err) {
+    console.error('Error fetching paginated sales:', err);
+    res.status(500).json({ error: 'Failed to fetch paginated sales' });
+  }
+});
+
 module.exports = router;

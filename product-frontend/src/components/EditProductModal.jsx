@@ -113,16 +113,6 @@ export default function EditProductModal({ product, onClose, onSave }) {
         </div>
 
         <div style={styles.field}>
-          <label>Description:</label>
-          <textarea
-            style={{ ...styles.input, height: '80px', resize: 'vertical' }}
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div style={styles.field}>
           <label>UPC:</label>
           <input style={styles.input} name="upc" value={form.upc} onChange={handleChange} />
         </div>

@@ -87,7 +87,7 @@ export default function App() {
             }} />
           </div>
 
-        <div className="flex-column">
+        <div className="flex-column soldlist-column">
           <SoldList sales={sales} onChange={() => {
               refreshSales();
               refreshStock();
