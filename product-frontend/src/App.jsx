@@ -4,7 +4,7 @@ import StockManager from './components/StockManager';
 import SaleRecorder from './components/SalesRecorder';
 import ProductList from './components/ProductList';
 import SoldList from './components/SoldList';
-// import './app.css';
+
 
 import { api } from './api';
 
@@ -17,7 +17,6 @@ export default function App() {
 
   const [products, setProducts] = useState([]);
   const [stockData, setStockData] = useState([]);
-  const [sales, setSales] = useState([]);
 
 
   const refreshTotals = () => {
@@ -26,10 +25,19 @@ export default function App() {
       .catch(err => console.error('Error fetching totals:', err));
   };
 
-  const refreshProducts = () => {
-    api.get('/products')
+  const [productPage, setProductPage] = useState(1);
+
+  const refreshFullProducts = () => {
+    api.get('/products')  
       .then(res => setProducts(res.data))
-      .catch(err => console.error('Error fetching products:', err));
+      .catch(err => console.error(err));
+  };
+
+  const [paginatedProducts, setPaginatedProducts] = useState({ data: [], page: 1, total: 0 });
+  const refreshPaginatedProducts = (page = 1) => {
+    api.get(`/products/paginated?page=${page}&limit=10`)
+      .then(res => setPaginatedProducts(res.data))
+      .catch(err => console.error(err));
   };
 
   const refreshStock = () => {
@@ -39,31 +47,37 @@ export default function App() {
 };
 
 
-  const refreshSales = () => {
-    api.get('/sold/history')
-      .then(res =>{ 
-        setSales(res.data)
+  const [sales, setSales] = useState([]);
+  const [salesPage, setSalesPage] = useState(1);
+  const [totalSales, setTotalSales] = useState(0);
+
+  const refreshSales = (page = 1) => {
+    api.get(`/sold/paginated?page=${page}&limit=10`)
+      .then(res => {
+        setSales(res.data.data);
+        setTotalSales(res.data.total);
       })
-      .catch(err => console.error('Failed to fetch sales history:', err));
+      .catch(err => console.error(err));
   };
 
   useEffect(() => {
     refreshTotals();
-    refreshProducts();
+    refreshPaginatedProducts(productPage);
     refreshStock();
-    refreshSales();
+    refreshSales(salesPage);
+    refreshFullProducts();
   }, []);
 
   return (
     <div className="body">
       <h1>Product Tracker</h1>
       <AddProductForm onChange={() => {
-        refreshTotals();
-        refreshProducts();
+        refreshFullProducts();
       }} />
       <StockManager
         products={products}
         onChange={() => {
+          refreshPaginatedProducts(productPage);
           refreshTotals();
           refreshStock();
         }}
@@ -71,7 +85,7 @@ export default function App() {
       <SaleRecorder 
         products={products} 
         onChange={() => {
-          refreshProducts();
+          refreshPaginatedProducts(productPage);
           refreshStock();
           refreshSales();
         }} 
@@ -79,19 +93,38 @@ export default function App() {
 
         <div className="flex-row">
           <div className="flex-column">
-            <ProductList stockData={stockData} onChange={() => {
-              refreshStock();
-              refreshProducts();
-              refreshSales();
+            <ProductList
+              stockData={paginatedProducts.data}       
+              currentPage={productPage}                 
+              totalItems={paginatedProducts.total}     
+              onPageChange={(newPage) => {
+                setProductPage(newPage);
+                refreshPaginatedProducts(newPage);
+                refreshSales(newPage);
 
-            }} />
+              }}
+              onChange={() => {
+                refreshPaginatedProducts(productPage);
+                refreshStock();
+                refreshSales(salesPage);
+              }}
+            />
           </div>
 
         <div className="flex-column soldlist-column">
-          <SoldList sales={sales} onChange={() => {
-              refreshSales();
+          <SoldList
+            sales={sales}
+            currentPage={salesPage}
+            totalItems={totalSales}
+            onPageChange={(newPage) => {
+              setSalesPage(newPage);
+              refreshSales(newPage);
+              refreshPaginatedProducts(newPage);
+            }}
+            onChange={() => {
+              refreshSales(salesPage);
+              refreshPaginatedProducts(productPage);
               refreshStock();
-              refreshProducts();
             }}
           />
         </div>

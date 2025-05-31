@@ -2,6 +2,43 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
+// Get paginated stock list with joined product info
+router.get('/paginated', async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
+  // console.log(`Fetching page ${page} with limit ${limit} and offset ${offset}`);
+  try {
+    // Total count
+    const [[{ total }]] = await db.query(`
+      SELECT COUNT(*) AS total FROM products
+      JOIN stock ON products.id = stock.product_id
+    `);
+
+    // Paged data
+    const [rows] = await db.query(`
+      SELECT
+        p.id,
+        p.name,
+        p.company,
+        p.price,
+        p.upc,
+        s.quantity,
+        s.bought_at,
+        (s.quantity * p.price) AS stock_value
+      FROM products p
+      JOIN stock s ON p.id = s.product_id
+      ORDER BY s.bought_at DESC
+      LIMIT ? OFFSET ?
+    `, [limit, offset]);
+
+    res.json({ data: rows, total });
+  } catch (err) {
+    console.error('Error fetching paginated stock:', err);
+    res.status(500).json({ error: 'Failed to fetch paginated stock' });
+  }
+});
+
 // Shows all products
 router.get('/', async (req, res) => {
   const [rows] = await db.query('SELECT * FROM products');
@@ -69,42 +106,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Get paginated stock list with joined product info
-router.get('/paginated', async (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
-  const offset = (page - 1) * limit;
-  // console.log(`Fetching page ${page} with limit ${limit} and offset ${offset}`);
-  try {
-    // Total count
-    const [[{ total }]] = await db.query(`
-      SELECT COUNT(*) AS total FROM products
-      JOIN stock ON products.id = stock.product_id
-    `);
 
-    // Paged data
-    const [rows] = await db.query(`
-      SELECT
-        p.id,
-        p.name,
-        p.company,
-        p.price,
-        p.upc,
-        s.quantity,
-        s.bought_at,
-        (s.quantity * p.price) AS stock_value
-      FROM products p
-      JOIN stock s ON p.id = s.product_id
-      ORDER BY s.bought_at DESC
-      LIMIT ? OFFSET ?
-    `, [limit, offset]);
-
-    res.json({ data: rows, total });
-  } catch (err) {
-    console.error('Error fetching paginated stock:', err);
-    res.status(500).json({ error: 'Failed to fetch paginated stock' });
-  }
-});
 
 
 module.exports = router;

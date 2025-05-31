@@ -1,22 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { api } from '../api';
+import React, { useState } from 'react';
 import EditSellModal from './EditSellModal';
+import { api } from '../api';
 
-export default function SoldList({ onChange }) {
-  const [sales, setSales] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+export default function SoldList({ sales, currentPage, totalItems, onPageChange, onChange }) {
   const [editingProduct, setEditingProduct] = useState(null);
   const itemsPerPage = 10;
-
-  useEffect(() => {
-    async function fetchSales() {
-      const res = await api.get(`/sold/paginated?page=${currentPage}&limit=${itemsPerPage}`);
-      setSales(res.data.data);
-      setTotalPages(Math.ceil(res.data.total / itemsPerPage));
-    }
-    fetchSales();
-  }, [currentPage]);
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   const handleEdit = (product) => {
     setEditingProduct(product);
@@ -33,14 +22,12 @@ export default function SoldList({ onChange }) {
 
     setEditingProduct(null);
     if (onChange) onChange();
-    setCurrentPage(1); // Optionally reset to first page after edit
   };
 
   const handleDelete = async (Id) => {
     if (window.confirm("Are you sure you want to delete this Sale?")) {
       await api.delete(`/sold/${Id}`);
       if (onChange) onChange();
-      setCurrentPage(1);
     }
   };
 
@@ -73,7 +60,7 @@ export default function SoldList({ onChange }) {
                 <td>${Number(row.purchased_price || 0).toFixed(2)}</td>
                 <td>${Number(row.sold_price || 0).toFixed(2)}</td>
                 <td>{row.quantity}</td>
-                <td>${(Number(row.sold_price) * row.quantity - ((row.purchased_price) * row.quantity)).toFixed(2)}</td>
+                <td>${(Number(row.sold_price) * row.quantity - (row.purchased_price * row.quantity)).toFixed(2)}</td>
                 <td className="action-buttons">
                   <button onClick={() => handleEdit(row)}>Edit</button>
                   <button onClick={() => handleDelete(row.id)}>Delete</button>
@@ -83,13 +70,19 @@ export default function SoldList({ onChange }) {
           </tbody>
         </table>
 
-        {/* Pagination controls now inside wrapper */}
+        {/* Pagination controls */}
         <div className="pagination-controls">
-          <button onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1}>
+          <button
+            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+          >
             ← Prev
           </button>
           <span>Page {currentPage} of {totalPages}</span>
-          <button onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages}>
+          <button
+            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+          >
             Next →
           </button>
         </div>
