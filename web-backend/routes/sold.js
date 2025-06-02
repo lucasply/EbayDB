@@ -155,7 +155,7 @@ router.get('/paginated', async (req, res) => {
       FROM sold s
       JOIN products p ON s.product_id = p.id
       LEFT JOIN stock stk ON s.product_id = stk.product_id
-      ORDER BY s.sold_at DESC
+      ORDER BY p.name
       LIMIT ? OFFSET ?
     `, [limit, offset]);
 

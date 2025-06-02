@@ -28,7 +28,7 @@ router.get('/paginated', async (req, res) => {
         (s.quantity * p.price) AS stock_value
       FROM products p
       JOIN stock s ON p.id = s.product_id
-      ORDER BY s.bought_at DESC
+      ORDER BY p.name 
       LIMIT ? OFFSET ?
     `, [limit, offset]);
 
@@ -41,7 +41,7 @@ router.get('/paginated', async (req, res) => {
 
 // Shows all products
 router.get('/', async (req, res) => {
-  const [rows] = await db.query('SELECT * FROM products');
+  const [rows] = await db.query('SELECT * FROM products ORDER BY name');
   res.json(rows);
 });
 
