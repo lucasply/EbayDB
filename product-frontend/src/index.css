@@ -170,3 +170,18 @@ h1 {
 .nav-link:hover {
   color: #00bfff59; /* Light blue on hover */
 }
+
+input[type="date"] {
+  background-color: #1a1818; /* dark background */
+  color: #ffffff;            /* white text */
+  border: 1px solid #555;    /* subtle border */
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1); /* Invert colors for better visibility */
+}
+
+

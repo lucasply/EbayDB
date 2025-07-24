@@ -113,7 +113,7 @@ export default function EditProductModal({ product, onClose, onSave }) {
         </div>
 
         <div style={styles.field}>
-          <label>UPC:</label>
+          <label>Shelf:</label>
           <input style={styles.input} name="upc" value={form.upc} onChange={handleChange} />
         </div>
 

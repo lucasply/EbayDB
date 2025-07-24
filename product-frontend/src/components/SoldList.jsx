@@ -12,13 +12,13 @@ export default function SoldList({ sales, currentPage, totalItems, onPageChange,
   };
 
   const handleSave = async (product, updatedFields) => {
-    const { name, PurchaseDate, SoldDate, PurchasePrice, SoldPrice, quantity } = updatedFields;
+    const { name, PurchaseDate, SoldDate, PurchasePrice, SoldPrice, quantity, revenue } = updatedFields;
     const productId = product.product_id;
     const soldId = product.id;
 
     await api.put(`/products/${productId}`, { name, price: PurchasePrice });
     await api.post('/stock/set2', { product_id: productId, date: PurchaseDate });
-    await api.post('/sold/set', { id: soldId, quantity: parseInt(quantity, 10), sold_price: SoldPrice, date: SoldDate });
+    await api.post('/sold/set', { id: soldId, quantity: parseInt(quantity, 10), sold_price: SoldPrice, revenue, date: SoldDate });
 
     setEditingProduct(null);
     if (onChange) onChange();
@@ -60,7 +60,7 @@ export default function SoldList({ sales, currentPage, totalItems, onPageChange,
                 <td>${Number(row.purchased_price || 0).toFixed(2)}</td>
                 <td>${Number(row.sold_price || 0).toFixed(2)}</td>
                 <td>{row.quantity}</td>
-                <td>${(Number(row.sold_price) * row.quantity - (row.purchased_price * row.quantity)).toFixed(2)}</td>
+                <td>${Number(row.revenue || 0).toFixed(2)}</td>
                 <td className="action-buttons">
                   <button onClick={() => handleEdit(row)}>Edit</button>
                   <button onClick={() => handleDelete(row.id)}>Delete</button>

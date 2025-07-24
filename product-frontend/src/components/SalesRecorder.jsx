@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../api';
 
 export default function SaleRecorder({ products, onChange }) {
-  const [form, setForm] = useState({ product_id: '', quantity: '', sold_price: '', date: '' });
+  const [form, setForm] = useState({ product_id: '', quantity: '', sold_price: '', revenue: '', date: '' });
 
   const handleSubmit = async (e) => {
   e.preventDefault();
@@ -12,7 +12,7 @@ export default function SaleRecorder({ products, onChange }) {
     // If the response is successful
     if (response.data.success) {
       alert('Sale recorded!');
-      setForm({ product_id: '', quantity: '', sold_price: '', date: '' }); // Reset form
+      setForm({ product_id: '', quantity: '', sold_price: '', revenue: '', date: '' }); // Reset form
       if (onChange) onChange(); // Refresh product data
     } else {
       // Handle cases where `success: false` is returned
@@ -51,6 +51,13 @@ export default function SaleRecorder({ products, onChange }) {
         placeholder="Sold Price"
         value={form.sold_price}
         onChange={e => setForm({ ...form, sold_price: e.target.value })}
+        required
+      />
+      <input
+        type="number"
+        placeholder="Revenue"
+        value={form.revenue}
+        onChange={e => setForm({ ...form, revenue: e.target.value })}
         required
       />
       <input

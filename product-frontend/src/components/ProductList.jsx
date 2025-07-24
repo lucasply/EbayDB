@@ -35,6 +35,7 @@ export default function ProductList({ stockData, currentPage, totalItems, onPage
               <th>Name</th>
               <th>Company</th>
               <th>Stock</th>
+              <th>Shelf</th>
               <th>Date Purchased</th>
               <th>Price</th>
               <th>Total</th>
@@ -47,6 +48,7 @@ export default function ProductList({ stockData, currentPage, totalItems, onPage
                 <td>{row.name}</td>
                 <td>{row.company}</td>
                 <td>{row.quantity}</td>
+                <td>{row.upc}</td>
                 <td>{new Date(row.bought_at).toLocaleDateString('en-US', {
                   year: 'numeric', month: 'long', day: 'numeric'
                 })}</td>

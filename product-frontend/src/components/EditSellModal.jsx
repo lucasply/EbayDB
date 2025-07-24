@@ -55,6 +55,7 @@ export default function EditSellModal({ product, onClose, onSave }) {
     PurchasePrice: '',
     SoldPrice: '',
     quantity: '',
+    revenue: '',
   });
 
   useEffect(() => {
@@ -66,6 +67,7 @@ export default function EditSellModal({ product, onClose, onSave }) {
         PurchasePrice: product.purchased_price || '',
         SoldPrice: product.sold_price || '',
         quantity: product.quantity || 0,
+        revenue: product.revenue || 0,
         });
     }
     }, [product]);
@@ -113,6 +115,11 @@ export default function EditSellModal({ product, onClose, onSave }) {
         <div style={styles.field}>
           <label>Quantity:</label>
           <input style={styles.input} name="quantity" type="number" value={form.quantity} onChange={handleChange} />
+        </div>
+
+        <div style={styles.field}>
+          <label>Revenue:</label>
+          <input style={styles.input} name="revenue" type="number" value={form.revenue} onChange={handleChange} />
         </div>
 
         <div style={styles.buttonRow}>
