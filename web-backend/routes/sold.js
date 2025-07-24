@@ -112,6 +112,7 @@ router.get('/paginated', async (req, res) => {
         s.product_id,
         p.name,
         p.company,
+        p.upc,
         s.sold_at,
         s.sold_price,
         s.quantity,

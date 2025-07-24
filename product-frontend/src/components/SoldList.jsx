@@ -12,24 +12,40 @@ export default function SoldList({ sales, currentPage, totalItems, onPageChange,
   };
 
   const handleSave = async (product, updatedFields) => {
-    const { name, PurchaseDate, SoldDate, PurchasePrice, SoldPrice, quantity, revenue } = updatedFields;
-    const productId = product.product_id;
-    const soldId = product.id;
+  const {
+    name,
+    company = product.company, // fallback to original
+    PurchaseDate,
+    SoldDate,
+    PurchasePrice,
+    SoldPrice,
+    quantity,
+    revenue
+  } = updatedFields;
 
-    await api.put(`/products/${productId}`, { name, price: PurchasePrice });
-    await api.post('/stock/set2', { product_id: productId, date: PurchaseDate });
-    await api.post('/sold/set', { id: soldId, quantity: parseInt(quantity, 10), sold_price: SoldPrice, revenue, date: SoldDate });
+  const productId = product.product_id;
+  const soldId = product.id;
 
-    setEditingProduct(null);
-    if (onChange) onChange();
-  };
+  await api.put(`/products/${productId}`, {
+    name,
+    company,
+    price: PurchasePrice,
+    upc: product.upc
+  });
 
-  const handleDelete = async (Id) => {
-    if (window.confirm("Are you sure you want to delete this Sale?")) {
-      await api.delete(`/sold/${Id}`);
-      if (onChange) onChange();
-    }
-  };
+  await api.post('/stock/set2', { product_id: productId, date: PurchaseDate });
+  await api.post('/sold/set', {
+    id: soldId,
+    quantity: parseInt(quantity, 10),
+    sold_price: SoldPrice,
+    revenue,
+    date: SoldDate
+  });
+
+  setEditingProduct(null);
+  if (onChange) onChange();
+};
+
 
   return (
     <div>

@@ -92,7 +92,7 @@ router.delete('/:id', async (req, res) => {
 // Update a product
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { name, price, company, upc } = req.body;
+  const { name, company, price, upc } = req.body;
 
   try {
     await db.query(
