@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import HomePage from './HomePage';
 import SalesPage from './SalesPage';
 import './index.css';
+
 export default function App() {
   return (
     <Router>
