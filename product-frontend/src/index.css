@@ -153,3 +153,20 @@ h1 {
   justify-content: center;
   margin-top: 1rem;
 }
+
+.nav {
+  margin-bottom: 1rem;
+  padding: 10px;
+}
+
+.nav-link {
+  color: #00bfff; /* Light blue */
+  text-decoration: none;
+  margin: 0 10px;
+  font-weight: bold;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #00bfff59; /* Light blue on hover */
+}
