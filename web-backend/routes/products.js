@@ -12,7 +12,6 @@ router.get('/paginated', async (req, res) => {
     // Total count
     const [[{ total }]] = await db.query(`
       SELECT COUNT(*) AS total FROM products
-      JOIN stock ON products.id = stock.product_id
     `);
 
     // Paged data
@@ -23,11 +22,10 @@ router.get('/paginated', async (req, res) => {
         p.company,
         p.price,
         p.upc,
-        s.quantity,
-        s.bought_at,
-        (s.quantity * p.price) AS stock_value
+        p.quantity,
+        p.bought_at,
+        (p.quantity * p.price) AS stock_value
       FROM products p
-      JOIN stock s ON p.id = s.product_id
       ORDER BY p.name 
       LIMIT ? OFFSET ?
     `, [limit, offset]);
@@ -47,10 +45,10 @@ router.get('/', async (req, res) => {
 
 // Inserts a new product
 router.post('/', async (req, res) => {
-  const { name, price, company, upc } = req.body;
+  const { name, price, company, quantity, date, upc } = req.body;
   const [result] = await db.query(
-    'INSERT INTO products (name, price, company,  upc) VALUES (?, ?, ?,  ?)',
-    [name, price, company, upc]
+    'INSERT INTO products (name, price, company,  quantity, bought_at, upc) VALUES (?, ?, ?,  ?, ?, ?)',
+    [name, price, company, quantity, date, upc]
   );
   res.json({ id: result.insertId });
 });
@@ -63,24 +61,6 @@ router.delete('/:id', async (req, res) => {
     // Delete product from products table
     await db.query('DELETE FROM products WHERE id = ?', [id]);
 
-    // Delete related stock/sold entries
-    await db.query('DELETE FROM stock WHERE product_id = ?', [id]);
-    await db.query('DELETE FROM sold WHERE product_id = ?', [id]);
-
-    // Recalculate total stock value
-    const [stockValueRows] = await db.query(`
-      SELECT IFNULL(SUM(s.quantity * p.price), 0) AS total_stock_value
-      FROM stock s
-      JOIN products p ON s.product_id = p.id
-    `);
-
-    const total_stock_value = stockValueRows[0].total_stock_value;
-
-    await db.query(`
-      INSERT INTO totals (id, total_stock_value)
-      VALUES (1, ?)
-      ON DUPLICATE KEY UPDATE total_stock_value = VALUES(total_stock_value)
-    `, [total_stock_value]);
 
     res.json({ success: true, message: 'Product deleted.' });
   } catch (err) {
@@ -92,12 +72,12 @@ router.delete('/:id', async (req, res) => {
 // Update a product
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { name, company, price, upc } = req.body;
+  const { name, company, price, quantity, date, upc } = req.body;
 
   try {
     await db.query(
-      'UPDATE products SET name = ?, price = ?, company = ?, upc = ? WHERE id = ?',
-      [name, price, company, upc, id]
+      'UPDATE products SET name = ?, price = ?, company = ?, quantity = ?, bought_at = ?, upc = ? WHERE id = ?',
+      [name, price, company, quantity, date, upc, id]
     );
     res.json({ success: true, message: 'Product updated.' });
   } catch (err) {

@@ -11,8 +11,7 @@ export default function ProductList({ stockData, currentPage, totalItems, onPage
 
   const handleSave = async (id, updatedFields) => {
     const { name, price, company, description, upc, quantity, date } = updatedFields;
-    await api.put(`/products/${id}`, { name, price, company, description, upc });
-    await api.post('/stock/set', { product_id: id, quantity: parseInt(quantity, 10), date });
+    await api.put(`/products/${id}`, { name, price, company, description, upc, date, quantity });
     setEditingProduct(null);
     if (onChange) onChange();
   };

@@ -6,7 +6,7 @@ router.post('/', async (req, res) => {
   const { product_id, quantity, sold_price, revenue, date } = req.body;
 
   // Check current stock
-  const [[stockRow]] = await db.query('SELECT quantity FROM stock WHERE product_id = ?', [product_id]);
+  const [[stockRow]] = await db.query('SELECT quantity FROM products WHERE id = ?', [product_id]);
 
   if (!stockRow || stockRow.quantity < quantity) {
     return res.json({
@@ -18,7 +18,7 @@ router.post('/', async (req, res) => {
     await db.query('UPDATE products SET upc = NULL WHERE id = ?', [product_id]);
   }
   // Deduct from stock
-  await db.query('UPDATE stock SET quantity = quantity - ? WHERE product_id = ?', [quantity, product_id]);
+  await db.query('UPDATE products SET quantity = quantity - ? WHERE id = ?', [quantity, product_id]);
 
 
   // Record sale
@@ -57,10 +57,9 @@ router.get('/history', async (req, res) => {
       s.revenue,
       s.quantity,
       p.price AS purchased_price,
-      stk.bought_at AS purchase_date
+      p.bought_at AS purchase_date
     FROM sold s
     JOIN products p ON s.product_id = p.id
-    LEFT JOIN stock stk ON s.product_id = stk.product_id
     ORDER BY s.sold_at DESC
     `);
     res.json(rows);
@@ -118,10 +117,9 @@ router.get('/paginated', async (req, res) => {
         s.quantity,
         s.revenue,
         p.price AS purchased_price,
-        stk.bought_at AS purchase_date
+        p.bought_at AS purchase_date
       FROM sold s
       JOIN products p ON s.product_id = p.id
-      LEFT JOIN stock stk ON s.product_id = stk.product_id
       ORDER BY p.name
       LIMIT ? OFFSET ?
     `, [limit, offset]);

@@ -11,13 +11,11 @@ app.use(express.json());
 
 // Routes
 const productRoutes = require('./routes/products');
-const stockRoutes = require('./routes/stock');
 const soldRoutes = require('./routes/sold');
 const totalsRoutes = require('./routes/totals');
 
 // API routes
 app.use('/api/products', productRoutes);
-app.use('/api/stock', stockRoutes);
 app.use('/api/sold', soldRoutes);
 app.use('/api/totals', totalsRoutes);
 
