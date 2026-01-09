@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import EditProductModal from './EditProductModal';
 import { api } from '../api';
 
-export default function ProductList({ stockData, currentPage, totalItems, onPageChange, onChange }) {
+export default function ProductList({ stockData, currentPage, totalItems, onPageChange, onChange, highlightedProductId }) {
   const [editingProduct, setEditingProduct] = useState(null);
   const limit = 10;
   const totalPages = Math.ceil(totalItems / limit);
@@ -43,7 +43,11 @@ export default function ProductList({ stockData, currentPage, totalItems, onPage
           </thead>
           <tbody>
             {stockData.map(row => (
-              <tr key={row.id}>
+              <tr
+                key={row.id}
+                id={`product-${row.id}`}
+                className={row.id === highlightedProductId ? 'highlighted' : ''}
+              >
                 <td>{row.name}</td>
                 <td>{row.company}</td>
                 <td>{row.quantity}</td>
@@ -61,6 +65,7 @@ export default function ProductList({ stockData, currentPage, totalItems, onPage
             ))}
           </tbody>
         </table>
+
 
         <div className="pagination-controls">
           <button

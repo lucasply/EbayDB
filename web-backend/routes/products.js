@@ -43,15 +43,52 @@ router.get('/', async (req, res) => {
   res.json(rows);
 });
 
-// Inserts a new product
+// Inserts a new product with duplicate check + page info
 router.post('/', async (req, res) => {
   const { name, price, company, quantity, date, upc } = req.body;
-  const [result] = await db.query(
-    'INSERT INTO products (name, price, company,  quantity, bought_at, upc) VALUES (?, ?, ?,  ?, ?, ?)',
-    [name, price, company, quantity, date, upc]
-  );
-  res.json({ id: result.insertId });
+  const limit = 10; // must match frontend pagination
+
+  try {
+    // Check if product already exists
+    const [existing] = await db.query(
+      'SELECT id FROM products WHERE name = ? AND company = ?',
+      [name, company]
+    );
+
+    if (existing.length > 0) {
+      const productId = existing[0].id;
+
+      // Find the product's position in the ordered list
+      const [[{ position }]] = await db.query(
+        `SELECT COUNT(*) AS position
+         FROM products
+         WHERE name < ? OR (name = ? AND company <= ?)`,
+        [name, name, company]
+      );
+      // Calculate page number
+      const page = Math.floor(position / limit) + 1;
+      console.log('Duplicate product page:', page);
+      return res.json({
+        success: false,
+        message: `Product "${name}" from "${company}" already exists.`,
+        page,
+        productId
+      });
+    }
+
+    // Insert new product
+    const [result] = await db.query(
+      'INSERT INTO products (name, price, company, quantity, bought_at, upc) VALUES (?, ?, ?, ?, ?, ?)',
+      [name, price, company, quantity, date, upc]
+    );
+
+    res.json({ success: true, id: result.insertId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
 });
+
 
 // Deletes a product by ID
 router.delete('/:id', async (req, res) => {

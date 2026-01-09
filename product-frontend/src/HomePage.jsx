@@ -9,6 +9,7 @@ export default function HomePage() {
   const [products, setProducts] = useState([]);
   const [productPage, setProductPage] = useState(1);
   const [paginatedProducts, setPaginatedProducts] = useState({ data: [], page: 1, total: 0 });
+  const [highlightedProductId, setHighlightedProductId] = useState(null);
 
   const refreshTotals = () => {
     api.get('/totals').then(res => setTotals(res.data)).catch(console.error);
@@ -34,8 +35,15 @@ export default function HomePage() {
   return (
     <div className="body">
       <h1>Product Tracker</h1>
+    
+      <AddProductForm
+        onChange={refreshFullProducts}                  // refresh products
+        refreshPaginatedProducts={refreshPaginatedProducts} // allow child to fetch page
+        setProductPage={setProductPage}                // handle page change
+        setHighlightedProductId={setHighlightedProductId} // handle highlight
+      />
 
-      <AddProductForm onChange={refreshFullProducts} />
+
       
 
       <SaleRecorder
@@ -57,7 +65,9 @@ export default function HomePage() {
             }}
             onChange={() => {
               refreshPaginatedProducts(productPage);
+              refreshFullProducts();           // for SaleRecorder dropdown
             }}
+            highlightedProductId={highlightedProductId}
           />
         </div>
       </div>

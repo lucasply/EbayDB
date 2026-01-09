@@ -53,6 +53,22 @@ const handleDelete = async (productId) => {
       }
   };
 
+const [totalRevenue, setTotalRevenue] = useState(0);
+
+// Fetch total revenue when the component mounts or when sales change
+React.useEffect(() => {
+  const fetchTotal = async () => {
+    try {
+      const res = await api.get('/totals');
+      setTotalRevenue(res.data.revenue || 0);
+    } catch (err) {
+      console.error('Failed to fetch total revenue', err);
+    }
+  };
+
+  fetchTotal();
+}, [sales]); // refetch whenever the sales data changes
+
   return (
     <div>
       <h2>📈 Sales History</h2>
@@ -107,6 +123,10 @@ const handleDelete = async (productId) => {
           >
             Next →
           </button>
+          {/* Total revenue display */}
+          <span style={{ marginLeft: '1rem', fontWeight: 'bold' }}>
+            Total Revenue: ${Number(totalRevenue).toFixed(2)}
+          </span>
         </div>
       </div>
 
