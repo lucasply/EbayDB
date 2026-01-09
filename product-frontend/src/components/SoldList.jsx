@@ -14,7 +14,7 @@ export default function SoldList({ sales, currentPage, totalItems, onPageChange,
   const handleSave = async (product, updatedFields) => {
   const {
     name,
-    company = product.company, // fallback to original
+    company = product.company, 
     PurchaseDate,
     SoldDate,
     PurchasePrice,
@@ -30,10 +30,11 @@ export default function SoldList({ sales, currentPage, totalItems, onPageChange,
     name,
     company,
     price: PurchasePrice,
-    upc: product.upc
+    upc: product.upc,
+    quantity: quantity,
+    date: PurchaseDate
   });
 
-  await api.post('/stock/set2', { product_id: productId, date: PurchaseDate });
   await api.post('/sold/set', {
     id: soldId,
     quantity: parseInt(quantity, 10),
@@ -45,7 +46,12 @@ export default function SoldList({ sales, currentPage, totalItems, onPageChange,
   setEditingProduct(null);
   if (onChange) onChange();
 };
-
+const handleDelete = async (productId) => {
+      if (window.confirm("Are you sure you want to delete this product?")) {
+        await api.delete(`/sold/${productId}`);
+        if (onChange) onChange();
+      }
+  };
 
   return (
     <div>

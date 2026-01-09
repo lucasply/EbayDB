@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { api } from '../api';
 
 export default function AddProductForm({ onChange }) {
-  const [form, setForm] = useState({ name: '', price: '', company: '', description: '', upc: '' });
+  const [form, setForm] = useState({ name: '', price: '', company: '', upc: '', quantity: '', date: '' });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     await api.post('/products', form);
     alert('Product added!');
-    setForm({ name: '', price: '', company: '', description: '', upc: '' });
+    setForm({ name: '', price: '', company: '', upc: '', quantity: '', date: '' });
     if (onChange) onChange(); // notify parent to refresh
   
   };
@@ -20,6 +20,20 @@ export default function AddProductForm({ onChange }) {
       <input type="number" placeholder="Price" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required />
       <input placeholder="Company" value={form.company} onChange={e => setForm({ ...form, company: e.target.value })} />
       <input placeholder="Shelf" value={form.upc} onChange={e => setForm({ ...form, upc: e.target.value })} />
+      <input
+        type="number"
+        placeholder="Quantity"
+        value={form.quantity}
+        onChange={e => setForm({ ...form, quantity: e.target.value })}
+        required
+      />
+      <input
+        type="date"
+        placeholder="Date Purchased"
+        value={form.date}
+        onChange={e => setForm({ ...form, date: e.target.value })}
+        required
+      />
       <button type="submit">Add</button>
     </form>
   );

@@ -50,6 +50,7 @@ const styles = {
 export default function EditSellModal({ product, onClose, onSave }) {
   const [form, setForm] = useState({
     name: '',
+    company: '',
     PurchaseDate: '',
     SoldDate: '',
     PurchasePrice: '',
@@ -62,6 +63,7 @@ export default function EditSellModal({ product, onClose, onSave }) {
     if (product) {
         setForm({
         name: product.name || '',
+        company: product.company || '',
         PurchaseDate: product.purchase_date ? product.purchase_date.split('T')[0] : '2000-01-01',
         SoldDate: product.sold_at ? product.sold_at.split('T')[0] : '2000-01-01',
         PurchasePrice: product.purchased_price || '',
@@ -91,6 +93,11 @@ export default function EditSellModal({ product, onClose, onSave }) {
         <div style={styles.field}>
           <label>Name:</label>
           <input style={styles.input} name="name" type="text" value={form.name} onChange={handleChange} />
+        </div>
+
+        <div style={styles.field}>
+          <label>Company:</label>
+          <input style={styles.input} name="company" type="text" value={form.company} onChange={handleChange} />
         </div>
 
         <div style={styles.field}>

@@ -101,6 +101,11 @@ export default function EditProductModal({ product, onClose, onSave }) {
           <label>Quantity:</label>
           <input style={styles.input} name="quantity" type="number" value={form.quantity} onChange={handleChange} />
         </div>
+        
+         <div style={styles.field}>
+          <label>Shelf:</label>
+          <input style={styles.input} name="upc" value={form.upc} onChange={handleChange} />
+        </div>
 
         <div style={styles.field}>
           <label>Date Purchased:</label>
@@ -110,11 +115,6 @@ export default function EditProductModal({ product, onClose, onSave }) {
         <div style={styles.field}>
           <label>Price:</label>
           <input style={styles.input} name="price" type="number" value={form.price} onChange={handleChange} />
-        </div>
-
-        <div style={styles.field}>
-          <label>Shelf:</label>
-          <input style={styles.input} name="upc" value={form.upc} onChange={handleChange} />
         </div>
 
         <div style={styles.buttonRow}>
