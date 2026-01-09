@@ -125,8 +125,18 @@ h1 {
   background-color: #242424;
 }
 
-.data-table tr:hover {
+.data-table tr.highlighted {
+  background-color: #ffeb3b; 
+  color: #000;        
+  transition: background-color 0.5s ease;
+}
+
+.data-table tr:not(.highlighted):hover {
   background-color: #3a3a3a;
+}
+
+.data-table tr.highlighted:hover {
+  background-color: #e9ae0d; 
 }
 
 .pagination {

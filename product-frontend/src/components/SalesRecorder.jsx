@@ -36,7 +36,7 @@ export default function SaleRecorder({ products, onChange }) {
       <select value={form.product_id} onChange={e => setForm({ ...form, product_id: e.target.value })} required>
         <option value="">Select Product</option>
         {products.map(p => (
-          <option key={p.id} value={p.id}>{p.name}</option>
+          <option key={p.id} value={p.id}>{p.name} ({p.company})</option>
         ))}
       </select>
       <input

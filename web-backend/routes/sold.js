@@ -27,7 +27,8 @@ router.post('/', async (req, res) => {
     [product_id, quantity, sold_price, revenue, date]
   );
 
-  
+  // Update total revenue
+  await db.query('UPDATE totals SET revenue = revenue + ? WHERE id = 1', [revenue]);
 
   res.json({ success: true});
 });
@@ -55,11 +56,13 @@ router.get('/history', async (req, res) => {
       s.sold_at,
       s.sold_price,
       s.revenue,
+      t.revenue AS total_revenue,
       s.quantity,
       p.price AS purchased_price,
       p.bought_at AS purchase_date
     FROM sold s
     JOIN products p ON s.product_id = p.id
+    CROSS JOIN totals t
     ORDER BY s.sold_at DESC
     `);
     res.json(rows);
@@ -71,8 +74,10 @@ router.get('/history', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
+  const [[saleToDelete]] = await db.query('SELECT revenue FROM sold WHERE id = ?', [id]);
   try {
     await db.query('DELETE FROM sold WHERE id = ?', [id]);
+    await db.query('UPDATE totals SET revenue = revenue - ? WHERE id = 1', [saleToDelete.revenue]);
     res.status(200).json({ success: true });  
   } catch (err) {
     console.error('Error deleting sale:', err);
@@ -83,7 +88,7 @@ router.delete('/:id', async (req, res) => {
 
 router.post('/set', async (req, res) => {
   const { id, quantity, sold_price, revenue, date } = req.body;
-
+  const [[existingSale]] = await db.query('SELECT revenue FROM sold WHERE id = ?', [id]);
   try {
       await db.query(
         'UPDATE sold SET quantity = ?, sold_price = ?, sold_at = ?, revenue = ? WHERE id = ?',
@@ -94,6 +99,10 @@ router.post('/set', async (req, res) => {
       console.error('Error updating product:', err);
       res.status(500).json({ success: false, error: 'Failed to update product.' });
     }
+    // Adjust the total revenue
+    // Subtract old revenue, add new revenue
+    const revenueDifference = revenue - existingSale.revenue;
+    await db.query('UPDATE totals SET revenue = revenue + ? WHERE id = 1', [revenueDifference]);
 });
 
 
@@ -130,5 +139,68 @@ router.get('/paginated', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch paginated sales' });
   }
 });
+
+
+router.get('/daily/:year/:month', async (req, res) => {
+  const { year, month } = req.params; // month = 1-12
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        DAY(s.sold_at) AS day,
+        COALESCE(SUM(s.revenue), 0) AS total_revenue
+    FROM sold s
+    WHERE YEAR(s.sold_at) = ? AND MONTH(s.sold_at) = ?
+    GROUP BY DAY(s.sold_at)
+    ORDER BY DAY(s.sold_at)
+    `, [year, month]);
+
+    // Fill missing days with 0 sales
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const salesByDay = Array.from({ length: daysInMonth }, (_, i) => {
+      const day = i + 1;
+      const found = rows.find(r => r.day === day);
+      return { day, total_revenue: found ? Number(found.total_revenue) : 0 };
+    });
+
+    res.json(salesByDay);
+  } catch (err) {
+    console.error('Error fetching daily sales:', err);
+    res.status(500).json({ error: 'Failed to fetch daily sales' });
+  }
+});
+
+
+router.get('/yearly/:year', async (req, res) => {
+  const { year } = req.params;
+
+  try {
+    const [rows] = await db.query(`
+      SELECT
+        MONTH(s.sold_at) AS month,
+        COALESCE(SUM(s.revenue), 0) AS total_revenue
+      FROM sold s
+      WHERE YEAR(s.sold_at) = ?
+      GROUP BY MONTH(s.sold_at)
+      ORDER BY MONTH(s.sold_at)
+    `, [year]);
+
+    // Ensure all 12 months exist (even if 0 revenue)
+    const salesByMonth = Array.from({ length: 12 }, (_, i) => {
+      const month = i + 1;
+      const found = rows.find(r => r.month === month);
+
+      return {
+        month,
+        total_revenue: found ? Number(found.total_revenue) : 0
+      };
+    });
+
+    res.json(salesByMonth);
+  } catch (err) {
+    console.error('Error fetching yearly sales:', err);
+    res.status(500).json({ error: 'Failed to fetch yearly sales' });
+  }
+});
+
 
 module.exports = router;
